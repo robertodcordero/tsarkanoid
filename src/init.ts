@@ -5,8 +5,8 @@ export const YELLOW_BRICK_IMAGE = './images/brick-yellow.png'
 export const PURPLE_BRICK_IMAGE = './images/brick-purple.png'
 
 // Constants
-export const PLAYFIELD_WIDTH = 500
-export const PLAYFIELD_HEIGHT = 1000
+export const PLAYFIELD_WIDTH = 1000
+export const PLAYFIELD_HEIGHT = 600
 export const STAGE_PADDING = 10
 export const STAGE_ROWS = 20
 export const STAGE_COLS = 10
