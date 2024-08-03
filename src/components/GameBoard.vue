@@ -1,6 +1,6 @@
 <template>
   <div class="game">
-    <canvas ref="playfieldElement" width="1000" height="600"></canvas>
+    <canvas ref="playfieldElement" :width="PLAYFIELD_WIDTH" :height="PLAYFIELD_HEIGHT"></canvas>
     <div class="display">
       <div ref="scoreElement"></div>
       <button ref="startElement">Start</button>
@@ -21,6 +21,8 @@ import useSprite from '@/composables/useSprite'
 
 // Level and colors
 import {
+  PLAYFIELD_WIDTH,
+  PLAYFIELD_HEIGHT,
   PADDLE_SPEED,
   PADDLE_WIDTH,
   PADDLE_HEIGHT,
@@ -136,7 +138,6 @@ function startGame(view: PlayField) {
 }
 
 onMounted(() => {
-  debugger
   if (playfieldElement.value) {
     // Create a new view
     const view = new PlayField(
@@ -150,4 +151,8 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+canvas {
+  outline: black 3px solid;
+}
+</style>
