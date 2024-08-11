@@ -1,16 +1,15 @@
 <template>
   <div class="game">
-    <canvas ref="playfieldElement" :width="PLAYFIELD_WIDTH" :height="PLAYFIELD_HEIGHT"></canvas>
-    <div class="display">
-      <div ref="scoreElement"></div>
-      <button ref="startElement">Start</button>
-      <div ref="infoElement">Press play!</div>
+    <canvas ref="playfield" :width="PLAYFIELD_WIDTH" :height="PLAYFIELD_HEIGHT"></canvas>
+    <div class="info">
+      <div class="score">{{ score }}</div>
+      <button class="btn btn-primary" @click="initGame">Start</button>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { PlayField } from '@/types/PlayField'
 import { Ball } from '@/types/Ball'
@@ -37,66 +36,65 @@ import {
 const PADDLE_IMAGE = './images/paddle.png'
 const BALL_IMAGE = './images/ball.png'
 
-const playfieldElement: Ref<HTMLCanvasElement | undefined> = ref<HTMLCanvasElement>()
-const scoreElement = ref<HTMLDivElement | null>()
-const startElement = ref()
-const infoElement = ref<HTMLDivElement | null>()
+const playfield: Ref<HTMLCanvasElement | undefined> = ref<HTMLCanvasElement>()
 
 let gameOver = false
-let score = 0
+let paused = ref(false)
+let score = ref(0)
 
 const { isCollidingBricks, checkBallCollision } = useCollision()
 const { createBricks } = useSprite()
 
 function setGameOver(view: PlayField) {
-  view.drawInfo('Game Over!')
+  // view.drawInfo('Game Over!')
   gameOver = true
 }
 
 function setGameWin(view: PlayField) {
-  view.drawInfo('Game Won!')
+  // view.drawInfo('Game Won!')
   gameOver = false
 }
 
 function gameLoop(view: PlayField, bricks: Brick[], paddle: Paddle, ball: Ball) {
-  view.clear()
-  view.drawBricks(bricks)
-  view.drawSprite(paddle)
-  view.drawSprite(ball)
+  if (!paused.value) {
+    view.clear()
+    view.drawBricks(bricks)
+    view.drawSprite(paddle)
+    view.drawSprite(ball)
 
-  // Move Ball
-  ball.moveBall()
+    // Move Ball
+    ball.moveBall()
 
-  // Move paddle and check so it won't exit the playfield
-  if (
-    (paddle.isMovingLeft && paddle.position.x > 0) ||
-    (paddle.isMovingRight && paddle.position.x < view.canvas.width - paddle.width)
-  ) {
-    paddle.movePaddle()
-  }
+    // Move paddle and check so it won't exit the playfield
+    if (
+      (paddle.isMovingLeft && paddle.position.x > 0) ||
+      (paddle.isMovingRight && paddle.position.x < view.canvas.width - paddle.width)
+    ) {
+      paddle.movePaddle()
+    }
 
-  checkBallCollision(ball, paddle, view)
+    checkBallCollision(ball, paddle, view)
 
-  const collidingBrick = isCollidingBricks(ball, bricks)
+    const collidingBrick = isCollidingBricks(ball, bricks)
 
-  if (collidingBrick) {
-    score += 1
-    view.drawScore(score)
-  }
+    if (collidingBrick) {
+      score.value += 1
+    }
 
-  // Game over when ball leaves playfield
-  if (ball.position.y > view.canvas.height) {
-    gameOver = true
-  }
+    // Game over when ball leaves playfield
+    if (ball.position.y > view.canvas.height) {
+      gameOver = true
+    }
 
-  // If game won, set gameOver and display win
-  if (bricks.length === 0) {
-    return setGameWin(view)
-  }
+    // If game won, set gameOver and display win
+    if (bricks.length === 0) {
+      return setGameWin(view)
+    }
 
-  // Return if gameover and don't run the requestAnimationFrame
-  if (gameOver) {
-    return setGameOver(view)
+    // Return if gameover and don't run the requestAnimationFrame
+    if (gameOver) {
+      return setGameOver(view)
+    }
   }
 
   requestAnimationFrame(() => gameLoop(view, bricks, paddle, ball))
@@ -104,9 +102,7 @@ function gameLoop(view: PlayField, bricks: Brick[], paddle: Paddle, ball: Ball) 
 
 function startGame(view: PlayField) {
   // Reset displays
-  score = 0
-  view.drawInfo('')
-  view.drawScore(0)
+  score.value = 0
 
   // Create all bricks
   const bricks = createBricks()
@@ -137,22 +133,22 @@ function startGame(view: PlayField) {
   gameLoop(view, bricks, paddle, ball)
 }
 
-onMounted(() => {
-  if (playfieldElement.value) {
-    // Create a new view
-    const view = new PlayField(
-      playfieldElement.value,
-      scoreElement.value,
-      startElement.value,
-      infoElement.value
-    )
-    view.initStartButton(startGame)
+const initGame = () => {
+  const view = new PlayField(playfield.value)
+  startGame(view)
+}
+
+const handleKeyUp = (e: KeyboardEvent): void => {
+  if (e.code === 'Space' || e.key === ' ') {
+    paused.value = !paused.value
   }
-})
+}
+
+document.addEventListener('keyup', handleKeyUp)
 </script>
 
 <style scoped>
-canvas {
-  @apply outline outline-black outline-4;
+.info {
+  @apply flex flex-nowrap flex-row justify-between items-center pt-4 pb-4;
 }
 </style>
