@@ -37,3 +37,21 @@ a,
     padding: 0 2rem;
   }
 }
+
+@layer components {
+  canvas {
+    @apply outline outline-black outline-4;
+  }
+  .btn {
+    @apply m-1 p-2 min-w-32;
+  }
+  .btn-primary {
+    @apply border rounded-xl border-blue-400 text-gray-600;
+  }
+  .btn-primary:hover {
+    @apply bg-blue-400 border-gray-600;
+  }
+  .score {
+    @apply font-extrabold text-blue-700;
+  }
+}
