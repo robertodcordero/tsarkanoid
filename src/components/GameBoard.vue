@@ -153,6 +153,6 @@ onMounted(() => {
 
 <style scoped>
 canvas {
-  outline: black 3px solid;
+  @apply outline outline-black outline-4;
 }
 </style>
