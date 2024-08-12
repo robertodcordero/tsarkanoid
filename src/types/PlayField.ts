@@ -36,4 +36,25 @@ export class PlayField {
   drawBricks(bricks: Brick[]): void {
     bricks.forEach((brick) => this.drawSprite(brick))
   }
+
+  _drawGameResultText(status: string, textColor: 'red' | 'blue') {
+    if (this._context) {
+      this._context.font = '42px Arial'
+      if (this._canvas) {
+        this._context.textAlign = 'center'
+        this._context.strokeStyle = 'black'
+        this._context.strokeText(status, this._canvas.width / 2, (7 * this._canvas.height) / 8)
+        this._context.fillStyle = textColor
+        this._context.fillText(status, this._canvas.width / 2, (7 * this._canvas.height) / 8)
+      }
+    }
+  }
+
+  drawGameOver(): void {
+    this._drawGameResultText('Game Over', 'red')
+  }
+
+  drawGameWin(): void {
+    this._drawGameResultText('Game Win!!!', 'blue')
+  }
 }

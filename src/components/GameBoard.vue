@@ -38,6 +38,8 @@ const BALL_IMAGE = './images/ball.png'
 
 const playfield: Ref<HTMLCanvasElement | undefined> = ref<HTMLCanvasElement>()
 
+let stopGame = false
+let isGameRunning = false
 let gameOver = false
 let paused = ref(false)
 let score = ref(0)
@@ -46,63 +48,72 @@ const { isCollidingBricks, checkBallCollision } = useCollision()
 const { createBricks } = useSprite()
 
 function setGameOver(view: PlayField) {
-  // view.drawInfo('Game Over!')
+  view.drawGameOver()
   gameOver = true
 }
 
 function setGameWin(view: PlayField) {
-  // view.drawInfo('Game Won!')
+  view.drawGameWin()
   gameOver = false
 }
 
 function gameLoop(view: PlayField, bricks: Brick[], paddle: Paddle, ball: Ball) {
-  if (!paused.value) {
-    view.clear()
-    view.drawBricks(bricks)
-    view.drawSprite(paddle)
-    view.drawSprite(ball)
+  if (stopGame) {
+    isGameRunning = false
+    return
+  }
 
-    // Move Ball
-    ball.moveBall()
+  if (paused.value) {
+    requestAnimationFrame(() => gameLoop(view, bricks, paddle, ball))
+  }
 
-    // Move paddle and check so it won't exit the playfield
-    if (
-      (paddle.isMovingLeft && paddle.position.x > 0) ||
-      (paddle.isMovingRight && paddle.position.x < view.canvas.width - paddle.width)
-    ) {
-      paddle.movePaddle()
-    }
+  view.clear()
+  view.drawBricks(bricks)
+  view.drawSprite(paddle)
+  view.drawSprite(ball)
 
-    checkBallCollision(ball, paddle, view)
+  // Move Ball
+  ball.moveBall()
 
-    const collidingBrick = isCollidingBricks(ball, bricks)
+  // Move paddle and check so it won't exit the playfield
+  if (
+    (paddle.isMovingLeft && paddle.position.x > 0) ||
+    (paddle.isMovingRight && paddle.position.x < view.canvas.width - paddle.width)
+  ) {
+    paddle.movePaddle()
+  }
 
-    if (collidingBrick) {
-      score.value += 1
-    }
+  checkBallCollision(ball, paddle, view)
 
-    // Game over when ball leaves playfield
-    if (ball.position.y > view.canvas.height) {
-      gameOver = true
-    }
+  const collidingBrick = isCollidingBricks(ball, bricks)
 
-    // If game won, set gameOver and display win
-    if (bricks.length === 0) {
-      return setGameWin(view)
-    }
+  if (collidingBrick) {
+    score.value += 1
+  }
 
-    // Return if gameover and don't run the requestAnimationFrame
-    if (gameOver) {
-      return setGameOver(view)
-    }
+  // Game over when ball leaves playfield
+  if (ball.position.y > view.canvas.height) {
+    gameOver = true
+  }
+
+  // If game won, set gameOver and display win
+  if (bricks.length === 0) {
+    return setGameWin(view)
+  }
+
+  // Return if gameover and don't run the requestAnimationFrame
+  if (gameOver) {
+    return setGameOver(view)
   }
 
   requestAnimationFrame(() => gameLoop(view, bricks, paddle, ball))
 }
 
 function startGame(view: PlayField) {
+  isGameRunning = true
   // Reset displays
   score.value = 0
+  gameOver = false
 
   // Create all bricks
   const bricks = createBricks()
@@ -134,8 +145,20 @@ function startGame(view: PlayField) {
 }
 
 const initGame = () => {
-  const view = new PlayField(playfield.value)
-  startGame(view)
+  let waitCycle = 1
+  while (isGameRunning && waitCycle < 10000) {
+    stopGame = true
+    waitCycle++
+  }
+
+  setTimeout(() => {
+    stopGame = false
+
+    if (playfield.value) {
+      const view = new PlayField(playfield.value)
+      startGame(view)
+    }
+  }, 300)
 }
 
 const handleKeyUp = (e: KeyboardEvent): void => {
