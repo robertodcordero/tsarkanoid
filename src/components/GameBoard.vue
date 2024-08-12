@@ -89,6 +89,7 @@ function gameLoop(view: PlayField, bricks: Brick[], paddle: Paddle, ball: Ball) 
 
   if (collidingBrick) {
     score.value += 1
+    playHitSound()
   }
 
   // Game over when ball leaves playfield
@@ -165,6 +166,11 @@ const handleKeyUp = (e: KeyboardEvent): void => {
   if (e.code === 'Space' || e.key === ' ') {
     paused.value = !paused.value
   }
+}
+
+const playHitSound = () => {
+  const audio = new Audio('./audios/hit.mp3')
+  audio.play()
 }
 
 document.addEventListener('keyup', handleKeyUp)
