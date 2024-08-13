@@ -39,17 +39,30 @@ export default function useCollision() {
       ball.position.y + ball.height === paddle.position.y
     ) {
       ball.changeYDirection()
+      playHitPaddleSound()
     }
 
     // Check fieldset
     if (ball.position.x > view.canvas.width - ball.width || ball.position.x < 0) {
       ball.changeXDirection()
+      playHitWallSound()
     }
 
     //
     if (ball.position.y < 0) {
       ball.changeYDirection()
+      playHitWallSound()
     }
+  }
+
+  const playHitWallSound = () => {
+    const audio = new Audio('./audios/hit-wall.mp3')
+    audio.play()
+  }
+
+  const playHitPaddleSound = () => {
+    const audio = new Audio('./audios/hit-paddle.mp3')
+    audio.play()
   }
 
   return { isCollidingBricks, checkBallCollision }
